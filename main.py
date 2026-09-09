@@ -6,9 +6,9 @@ import httpx
 app = FastAPI()
 
 # CHANGE THIS TO LAPTOP 1'S IP
-OLLAMA_URL = "http://192.168.1.105:11434"
+OLLAMA_URL = "http://ip:port"
 
-MODEL = "qwen2.5:7b-instruct-q4_K_M"
+MODEL = "mdoel-name"
 
 
 class ChatRequest(BaseModel):
