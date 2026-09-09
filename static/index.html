@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Qwen Local AI</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #111;
+            color: #eee;
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 800px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 150px;
+
+            background: #1e1e1e;
+            color: white;
+
+            border: 1px solid #444;
+            border-radius: 10px;
+
+            padding: 15px;
+            font-size: 16px;
+
+            resize: vertical;
+        }
+
+        button {
+            width: 100%;
+
+            margin-top: 15px;
+            padding: 14px;
+
+            border: none;
+            border-radius: 8px;
+
+            background: #444;
+            color: white;
+
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #555;
+        }
+
+        button:disabled {
+            background: #222;
+            color: #777;
+            cursor: not-allowed;
+        }
+
+        .response {
+            margin-top: 25px;
+
+            background: #1a1a1a;
+            border: 1px solid #333;
+
+            border-radius: 10px;
+
+            padding: 20px;
+
+            min-height: 150px;
+
+            white-space: pre-wrap;
+            line-height: 1.6;
+        }
+
+        .status {
+            text-align: center;
+            margin-top: 10px;
+            color: #888;
+        }
+    </style>
+</head>
+
+
+<body>
+
+<div class="container">
+
+    <h1>Qwen Local AI</h1>
+
+    <textarea
+        id="message"
+        placeholder="Ask something..."
+    ></textarea>
+
+    <button id="sendButton" onclick="sendMessage()">
+        Send
+    </button>
+
+    <div id="status" class="status"></div>
+
+    <div id="response" class="response">
+        Response will appear here...
+    </div>
+
+</div>
+
+
+<script>
+
+async function sendMessage() {
+
+    const messageBox = document.getElementById("message");
+    const responseBox = document.getElementById("response");
+    const status = document.getElementById("status");
+    const button = document.getElementById("sendButton");
+
+    const message = messageBox.value.trim();
+
+    if (!message) {
+        return;
+    }
+
+    button.disabled = true;
+
+    status.textContent = "Qwen is thinking...";
+    responseBox.textContent = "";
+
+    try {
+
+        const response = await fetch("/chat", {
+
+            method: "POST",
+
+            headers: {
+                "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify({
+                message: message
+            })
+
+        });
+
+
+        if (!response.ok) {
+            throw new Error("Server error");
+        }
+
+
+        const data = await response.json();
+
+        responseBox.textContent = data.response;
+
+        status.textContent = "Done";
+
+    }
+
+    catch (error) {
+
+        responseBox.textContent =
+            "Error: " + error.message;
+
+        status.textContent = "Request failed";
+
+    }
+
+    finally {
+
+        button.disabled = false;
+
+    }
+}
+
+</script>
+
+</body>
+
+</html>
