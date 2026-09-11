@@ -1,4 +1,5 @@
-A website which routes ollama inputs and output into a web-based app. 
-This web-app is for just testing the flow of data from web-server and machine running the model 
+The current architecture , which connects a single model with two debate characters A and B , A speaks pros and B speaks Cons. 
+
+configuration of two characters is inside main.py 
 
 --under development----

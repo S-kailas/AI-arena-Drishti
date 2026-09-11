@@ -1,70 +1,79 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Qwen Local AI</title>
+    <meta charset="UTF-8">
+
+    <title>AI Debate</title>
 
     <style>
+
         * {
             box-sizing: border-box;
         }
 
         body {
             margin: 0;
+
             font-family: Arial, sans-serif;
+
             background: #111;
             color: #eee;
-
-            display: flex;
-            justify-content: center;
-            align-items: center;
 
             min-height: 100vh;
         }
 
         .container {
-            width: 90%;
-            max-width: 800px;
+            max-width: 900px;
+
+            margin: auto;
+
+            padding: 40px 20px;
         }
 
         h1 {
             text-align: center;
+
             margin-bottom: 30px;
         }
 
-        textarea {
-            width: 100%;
-            height: 150px;
+        .topic-box {
+            display: flex;
 
-            background: #1e1e1e;
-            color: white;
+            gap: 10px;
+        }
 
-            border: 1px solid #444;
-            border-radius: 10px;
+        input {
+            flex: 1;
 
             padding: 15px;
-            font-size: 16px;
 
-            resize: vertical;
+            background: #1d1d1d;
+
+            border: 1px solid #444;
+
+            border-radius: 8px;
+
+            color: white;
+
+            font-size: 16px;
         }
 
         button {
-            width: 100%;
-
-            margin-top: 15px;
-            padding: 14px;
+            padding: 15px 25px;
 
             border: none;
+
             border-radius: 8px;
 
             background: #444;
+
             color: white;
 
-            font-size: 16px;
             cursor: pointer;
+
+            font-size: 16px;
         }
 
         button:hover {
@@ -72,33 +81,63 @@
         }
 
         button:disabled {
-            background: #222;
-            color: #777;
+            opacity: 0.5;
+
             cursor: not-allowed;
         }
 
-        .response {
+        .topic {
             margin-top: 25px;
 
-            background: #1a1a1a;
-            border: 1px solid #333;
+            text-align: center;
 
-            border-radius: 10px;
+            color: #aaa;
+        }
 
+        .debate {
+            margin-top: 30px;
+        }
+
+        .message {
             padding: 20px;
 
-            min-height: 150px;
+            margin-bottom: 15px;
+
+            border-radius: 12px;
+
+            line-height: 1.6;
 
             white-space: pre-wrap;
-            line-height: 1.6;
+        }
+
+        .a {
+            background: #18243a;
+
+            border-left: 4px solid #4c8bf5;
+        }
+
+        .b {
+            background: #351d1d;
+
+            border-left: 4px solid #f05252;
+        }
+
+        .speaker {
+            font-weight: bold;
+
+            margin-bottom: 10px;
         }
 
         .status {
             text-align: center;
-            margin-top: 10px;
+
+            margin-top: 20px;
+
             color: #888;
         }
+
     </style>
+
 </head>
 
 
@@ -106,90 +145,301 @@
 
 <div class="container">
 
-    <h1>Qwen Local AI</h1>
+    <h1>⚔️ AI Debate</h1>
 
-    <textarea
-        id="message"
-        placeholder="Ask something..."
-    ></textarea>
 
-    <button id="sendButton" onclick="sendMessage()">
-        Send
-    </button>
+    <div class="topic-box">
 
-    <div id="status" class="status"></div>
+        <input
+            id="topic"
+            placeholder="Enter a debate topic..."
+        >
 
-    <div id="response" class="response">
-        Response will appear here...
+        <button
+            id="start"
+            onclick="startDebate()"
+        >
+            Start Debate
+        </button>
+
     </div>
+
+
+    <div
+        id="topicDisplay"
+        class="topic"
+    ></div>
+
+
+    <div
+        id="debate"
+        class="debate"
+    ></div>
+
+
+    <div
+        id="status"
+        class="status"
+    ></div>
 
 </div>
 
 
 <script>
 
-async function sendMessage() {
+async function startDebate() {
 
-    const messageBox = document.getElementById("message");
-    const responseBox = document.getElementById("response");
-    const status = document.getElementById("status");
-    const button = document.getElementById("sendButton");
+    const topicInput =
+        document.getElementById("topic");
 
-    const message = messageBox.value.trim();
+    const startButton =
+        document.getElementById("start");
 
-    if (!message) {
+    const debate =
+        document.getElementById("debate");
+
+    const status =
+        document.getElementById("status");
+
+    const topic =
+        topicInput.value.trim();
+
+
+    if (!topic) {
+
+        alert("Enter a topic first.");
+
         return;
     }
 
-    button.disabled = true;
 
-    status.textContent = "Qwen is thinking...";
-    responseBox.textContent = "";
+    // Reset UI
+
+    debate.innerHTML = "";
+
+    status.textContent =
+        "Debate starting...";
+
+    startButton.disabled = true;
+
+
+    document.getElementById(
+        "topicDisplay"
+    ).textContent =
+        "Topic: " + topic;
+
 
     try {
 
-        const response = await fetch("/chat", {
+        const response = await fetch(
+            "/debate",
+            {
+                method: "POST",
 
-            method: "POST",
+                headers: {
+                    "Content-Type":
+                        "application/json"
+                },
 
-            headers: {
-                "Content-Type": "application/json"
-            },
-
-            body: JSON.stringify({
-                message: message
-            })
-
-        });
+                body: JSON.stringify({
+                    topic: topic
+                })
+            }
+        );
 
 
         if (!response.ok) {
-            throw new Error("Server error");
+
+            throw new Error(
+                "Server error: " +
+                response.status
+            );
+
         }
 
 
-        const data = await response.json();
+        const reader =
+            response.body.getReader();
 
-        responseBox.textContent = data.response;
+        const decoder =
+            new TextDecoder();
 
-        status.textContent = "Done";
+
+        let buffer = "";
+
+        let currentMessage = null;
+
+
+        while (true) {
+
+            const {
+                value,
+                done
+            } = await reader.read();
+
+
+            if (done) {
+                break;
+            }
+
+
+            buffer += decoder.decode(
+                value,
+                {
+                    stream: true
+                }
+            );
+
+
+            const lines =
+                buffer.split("\n");
+
+            buffer =
+                lines.pop();
+
+
+            for (const line of lines) {
+
+                if (!line.trim()) {
+                    continue;
+                }
+
+
+                const data =
+                    JSON.parse(line);
+
+
+                // ------------------
+                // New speaker
+                // ------------------
+
+                if (
+                    data.type ===
+                    "speaker"
+                ) {
+
+                    currentMessage =
+                        document.createElement(
+                            "div"
+                        );
+
+
+                    currentMessage.className =
+                        "message " +
+                        (
+                            data.speaker === "A"
+                                ? "a"
+                                : "b"
+                        );
+
+
+                    const speaker =
+                        document.createElement(
+                            "div"
+                        );
+
+
+                    speaker.className =
+                        "speaker";
+
+
+                    speaker.textContent =
+                        data.speaker === "A"
+                            ? "🟦 Debater A — PRO"
+                            : "🟥 Debater B — CON";
+
+
+                    const text =
+                        document.createElement(
+                            "div"
+                        );
+
+
+                    currentMessage.appendChild(
+                        speaker
+                    );
+
+                    currentMessage.appendChild(
+                        text
+                    );
+
+
+                    debate.appendChild(
+                        currentMessage
+                    );
+
+
+                    // Keep latest response visible
+
+                    currentMessage
+                        .scrollIntoView({
+                            behavior: "smooth"
+                        });
+                }
+
+
+                // ------------------
+                // Token
+                // ------------------
+
+                else if (
+                    data.type ===
+                    "token"
+                ) {
+
+                    if (!currentMessage) {
+                        continue;
+                    }
+
+
+                    const text =
+                        currentMessage
+                            .children[1];
+
+
+                    text.textContent +=
+                        data.token;
+
+
+                    window.scrollTo(
+                        0,
+                        document.body.scrollHeight
+                    );
+                }
+
+
+                // ------------------
+                // Finished
+                // ------------------
+
+                else if (
+                    data.type ===
+                    "done"
+                ) {
+
+                    status.textContent =
+                        "Debate finished.";
+                }
+
+            }
+
+        }
 
     }
 
     catch (error) {
 
-        responseBox.textContent =
-            "Error: " + error.message;
+        console.error(error);
 
-        status.textContent = "Request failed";
-
-    }
-
-    finally {
-
-        button.disabled = false;
+        status.textContent =
+            "Error: " +
+            error.message;
 
     }
+
+
+    startButton.disabled = false;
+
 }
 
 </script>
